@@ -1,8 +1,23 @@
+const {ProductsVal} = require ('./SPs/ProductsVal');
 var cors = require('cors');
 const express = require('express'),
       bodyParser = require('body-parser'),
       jwt = require('jsonwebtoken'),
       app = express();
+const mongoose = require('mongoose');
+const Product = require('./Schemas/products');
+
+const uri = "mongodb+srv://admin:basfapi@basf-cluster.yr64b.mongodb.net/basf?retryWrites=true&w=majority";
+
+/*MONGO ATLAS CONECTION*/
+mongoose.connect(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+  .then(() => {
+    console.log("Conectado a Atlas")
+  })
+    .catch(err => console.log(err))
       
 app.set('llave', 'miclaveultrasecreta123');
 app.use(cors());
@@ -63,7 +78,21 @@ rutasProtegidas.use((req, res, next) => {
     res.json(rbacRules);
 });
 
-app.get('/Upload', (req,res) => {
-  res.send("Response from upload service");
-  console.log('entra a upload')
+app.post('/products/upload', (req,res) => {
+    ProductsVal(req.body);
+
+  const ProductObj = new Product({
+    products: req.body
+  })
+  ProductObj.save()
+    .then(() => {
+      res.send({
+        message: "Productos agregados"
+      })
+       . catch((err) => {
+         res.send({
+           error:err
+         })
+       })
+    })
 });
